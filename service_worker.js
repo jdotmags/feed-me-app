@@ -1,12 +1,11 @@
 const CACHE_NAME = 'feed-me-v1.0.0';
-const urlsToCache = [
-  '/planner.html',
-  '/planner.js',
-  '/manifest.json',
-  '/icon-192.png',
-  '/icon-512.png'
-];
-
+   const urlsToCache = [
+     '/feed-me-app/planner.html',      // Add /feed-me-app/
+     '/feed-me-app/planner.js',
+     '/feed-me-app/manifest.json',
+     '/feed-me-app/icon-192.png',
+     '/feed-me-app/icon-512.png'
+   ];
 // Install event - cache files
 self.addEventListener('install', (event) => {
   console.log('[Service Worker] Installing...');
