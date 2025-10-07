@@ -2,7 +2,7 @@
   "name": "Feed Me - Menu Assistant",
   "short_name": "Feed Me",
   "description": "Your personal meal planning and recipe management assistant",
-  "start_url": "/planner.html",
+  "start_url": "/feed-me-app/planner.html",
   "display": "standalone",
   "background_color": "#FEFBF6",
   "theme_color": "#E8B84B",
