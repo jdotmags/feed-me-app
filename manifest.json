@@ -1,0 +1,64 @@
+{
+  "name": "Feed Me - Menu Assistant",
+  "short_name": "Feed Me",
+  "description": "Your personal meal planning and recipe management assistant",
+  "start_url": "/planner.html",
+  "display": "standalone",
+  "background_color": "#FEFBF6",
+  "theme_color": "#E8B84B",
+  "orientation": "portrait-primary",
+  "icons": [
+    {
+      "src": "icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ],
+  "screenshots": [
+    {
+      "src": "screenshot-mobile.png",
+      "sizes": "540x720",
+      "type": "image/png",
+      "form_factor": "narrow"
+    },
+    {
+      "src": "screenshot-desktop.png",
+      "sizes": "1280x720",
+      "type": "image/png",
+      "form_factor": "wide"
+    }
+  ],
+  "categories": ["food", "lifestyle", "productivity"],
+  "shortcuts": [
+    {
+      "name": "Add Recipe",
+      "short_name": "Add",
+      "description": "Quickly add a new recipe",
+      "url": "/planner.html?action=add",
+      "icons": [{ "src": "icon-192.png", "sizes": "192x192" }]
+    },
+    {
+      "name": "Weekly Planner",
+      "short_name": "Planner",
+      "description": "View your weekly meal plan",
+      "url": "/planner.html",
+      "icons": [{ "src": "icon-192.png", "sizes": "192x192" }]
+    }
+  ],
+  "share_target": {
+    "action": "/planner.html",
+    "method": "GET",
+    "params": {
+      "title": "title",
+      "text": "text",
+      "url": "url"
+    }
+  }
+}

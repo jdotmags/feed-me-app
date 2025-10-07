@@ -1,0 +1,1394 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0">
+  <meta name="description" content="Feed Me - Your personal meal planning and recipe management assistant. Plan your week, organize recipes, and generate shopping lists.">
+  <meta name="keywords" content="meal planning, recipe management, shopping list, meal prep, cooking">
+  <meta name="author" content="Feed Me">
+  
+  <!-- PWA Meta Tags -->
+  <meta name="theme-color" content="#E8B84B">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="application-name" content="Feed Me">
+  
+  <!-- iOS Meta Tags -->
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="default">
+  <meta name="apple-mobile-web-app-title" content="Feed Me">
+  <link rel="apple-touch-icon" href="icon-192.png">
+  
+  <!-- Manifest -->
+  <link rel="manifest" href="manifest.json">
+  
+  <!-- Favicon -->
+  <link rel="icon" type="image/png" href="icon-192.png">
+  
+  <title>Feed Me - Menu Assistant</title>
+  
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+    
+    :root {
+      --primary: #E8B84B;
+      --primary-dark: #D3A13F;
+      --primary-light: #F5D580;
+      --text-dark: #2D2D2D;
+      --text-light: #6B6B6B;
+      --bg-light: #FEFBF6;
+      --white: #FFFFFF;
+    }
+    
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', sans-serif;
+      background: var(--bg-light);
+      min-height: 100vh;
+      color: var(--text-dark);
+      -webkit-font-smoothing: antialiased;
+      -moz-osx-font-smoothing: grayscale;
+    }
+    
+    /* PWA Install Banner */
+    .install-banner {
+      display: none;
+      position: fixed;
+      bottom: 20px;
+      left: 20px;
+      right: 20px;
+      background: var(--primary);
+      color: white;
+      padding: 16px 20px;
+      border-radius: 12px;
+      box-shadow: 0 4px 20px rgba(0,0,0,0.2);
+      z-index: 1000;
+      animation: slideUp 0.3s ease-out;
+    }
+    
+    @keyframes slideUp {
+      from {
+        transform: translateY(100px);
+        opacity: 0;
+      }
+      to {
+        transform: translateY(0);
+        opacity: 1;
+      }
+    }
+    
+    .install-banner-content {
+      display: flex;
+      align-items: center;
+      gap: 15px;
+      margin-bottom: 12px;
+    }
+    
+    .install-banner-icon {
+      font-size: 32px;
+      flex-shrink: 0;
+    }
+    
+    .install-banner-text {
+      flex: 1;
+    }
+    
+    .install-banner-title {
+      font-weight: 700;
+      font-size: 16px;
+      margin-bottom: 4px;
+    }
+    
+    .install-banner-desc {
+      font-size: 13px;
+      opacity: 0.9;
+    }
+    
+    .install-banner-actions {
+      display: flex;
+      gap: 10px;
+    }
+    
+    .install-banner-btn {
+      flex: 1;
+      padding: 10px 20px;
+      border: none;
+      border-radius: 8px;
+      font-weight: 600;
+      cursor: pointer;
+      font-size: 14px;
+      transition: all 0.2s;
+    }
+    
+    .install-btn-primary {
+      background: white;
+      color: var(--primary);
+    }
+    
+    .install-btn-primary:hover {
+      background: #f5f5f5;
+    }
+    
+    .install-btn-secondary {
+      background: transparent;
+      color: white;
+      border: 2px solid white;
+    }
+    
+    .install-btn-secondary:hover {
+      background: rgba(255,255,255,0.1);
+    }
+    
+    .header {
+      background: var(--white);
+      padding: 20px;
+      box-shadow: 0 2px 12px rgba(0,0,0,0.08);
+      position: sticky;
+      top: 0;
+      z-index: 100;
+    }
+    
+    .header-content {
+      max-width: 1400px;
+      margin: 0 auto;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    
+    .logo {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+    }
+    
+    .logo-image {
+      width: 50px;
+      height: 50px;
+      border-radius: 8px;
+      overflow: hidden;
+      background: var(--primary);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 32px;
+    }
+    
+    .logo-text {
+      display: flex;
+      flex-direction: column;
+    }
+    
+    .logo-title {
+      font-size: 32px;
+      font-weight: 700;
+      color: var(--primary);
+      line-height: 1;
+    }
+    
+    .logo-subtitle {
+      font-size: 16px;
+      color: var(--text-dark);
+      font-weight: 400;
+    }
+    
+    .header-actions {
+      display: flex;
+      gap: 12px;
+      align-items: center;
+    }
+    
+    .container {
+      max-width: 1400px;
+      margin: 0 auto;
+      padding: 40px 20px;
+    }
+    
+    .tabs {
+      display: flex;
+      gap: 8px;
+      margin-bottom: 40px;
+      background: var(--white);
+      padding: 8px;
+      border-radius: 16px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+      overflow-x: auto;
+      -webkit-overflow-scrolling: touch;
+    }
+    
+    .tab {
+      flex: 1;
+      min-width: 120px;
+      padding: 16px 24px;
+      background: none;
+      border: none;
+      font-size: 16px;
+      color: var(--text-light);
+      cursor: pointer;
+      border-radius: 12px;
+      transition: all 0.3s;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
+      font-weight: 500;
+      white-space: nowrap;
+    }
+    
+    .tab:hover {
+      background: var(--bg-light);
+      color: var(--text-dark);
+    }
+    
+    .tab.active {
+      background: var(--primary);
+      color: var(--white);
+      font-weight: 600;
+    }
+    
+    .tab-icon {
+      font-size: 24px;
+    }
+    
+    .content {
+      display: none;
+    }
+    
+    .content.active {
+      display: block;
+      animation: fadeIn 0.3s ease-in;
+    }
+    
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(10px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+    
+    .btn {
+      background: var(--primary);
+      color: var(--white);
+      border: none;
+      padding: 14px 28px;
+      border-radius: 12px;
+      font-size: 16px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.2s;
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      box-shadow: 0 2px 8px rgba(232, 184, 75, 0.3);
+      touch-action: manipulation;
+    }
+    
+    .btn:active {
+      transform: scale(0.98);
+    }
+    
+    .btn:hover {
+      background: var(--primary-dark);
+      transform: translateY(-2px);
+      box-shadow: 0 4px 12px rgba(232, 184, 75, 0.4);
+    }
+    
+    .btn-secondary {
+      background: var(--white);
+      color: var(--text-dark);
+      border: 2px solid #E5E5E5;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+    }
+    
+    .btn-secondary:hover {
+      background: var(--bg-light);
+      border-color: var(--primary-light);
+    }
+    
+    .btn-success {
+      background: #10b981;
+      box-shadow: 0 2px 8px rgba(16, 185, 129, 0.3);
+    }
+    
+    .btn-success:hover {
+      background: #059669;
+    }
+    
+    .btn-small {
+      padding: 10px 20px;
+      font-size: 14px;
+    }
+
+    .weather-selector {
+      background: linear-gradient(135deg, #ffffff 0%, #fffef9 100%);
+      padding: 28px;
+      border-radius: 20px;
+      box-shadow: 0 6px 20px rgba(0,0,0,0.08);
+      margin-bottom: 32px;
+      border: 1px solid rgba(232, 184, 75, 0.2);
+    }
+
+    .weather-selector h3 {
+      margin-bottom: 20px;
+      color: var(--text-dark);
+      font-size: 20px;
+      font-weight: 600;
+    }
+
+    .weather-options {
+      display: flex;
+      gap: 16px;
+      flex-wrap: wrap;
+    }
+
+    .weather-option {
+      padding: 14px 24px;
+      background: var(--white);
+      border: 2px solid #E5E5E5;
+      border-radius: 14px;
+      cursor: pointer;
+      transition: all 0.2s;
+      font-size: 16px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      font-weight: 500;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+      touch-action: manipulation;
+    }
+
+    .weather-option:active {
+      transform: scale(0.98);
+    }
+
+    .weather-option:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+      border-color: var(--primary-light);
+    }
+
+    .weather-option.selected {
+      background: var(--primary);
+      color: var(--white);
+      border-color: var(--primary-dark);
+      box-shadow: 0 4px 16px rgba(232, 184, 75, 0.4);
+    }
+
+    .recommendations-card {
+      background: linear-gradient(135deg, #f0f9ff 0%, #e0f2fe 100%);
+      padding: 28px;
+      border-radius: 20px;
+      margin-bottom: 32px;
+      border: 2px solid #bae6fd;
+      box-shadow: 0 6px 20px rgba(3, 105, 161, 0.1);
+    }
+
+    .recommendations-card h3 {
+      color: #0369a1;
+      margin-bottom: 20px;
+      font-size: 22px;
+      font-weight: 600;
+    }
+
+    .recommendations-list {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+
+    .recommendation-item {
+      background: var(--white);
+      padding: 18px;
+      border-radius: 14px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      cursor: pointer;
+      transition: all 0.2s;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+      touch-action: manipulation;
+    }
+
+    .recommendation-item:active {
+      transform: scale(0.98);
+    }
+
+    .recommendation-item:hover {
+      transform: translateX(6px);
+      box-shadow: 0 4px 16px rgba(0,0,0,0.12);
+    }
+
+    .recommendation-name {
+      font-weight: 600;
+      color: var(--text-dark);
+      margin-bottom: 4px;
+      font-size: 16px;
+    }
+
+    .recommendation-match {
+      font-size: 14px;
+      color: var(--text-light);
+    }
+    
+    .category-pills {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 12px;
+      margin-bottom: 32px;
+      padding: 24px;
+      background: var(--white);
+      border-radius: 16px;
+      box-shadow: 0 2px 12px rgba(0,0,0,0.06);
+    }
+    
+    .category-pill {
+      padding: 12px 20px;
+      background: var(--bg-light);
+      border: 2px solid transparent;
+      border-radius: 24px;
+      font-size: 15px;
+      cursor: pointer;
+      transition: all 0.2s;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-weight: 500;
+      color: var(--text-dark);
+      touch-action: manipulation;
+    }
+    
+    .category-pill:active {
+      transform: scale(0.98);
+    }
+    
+    .category-pill:hover {
+      background: var(--primary-light);
+      transform: translateY(-2px);
+    }
+    
+    .category-pill.active {
+      background: var(--primary);
+      color: var(--white);
+      border-color: var(--primary-dark);
+      box-shadow: 0 4px 12px rgba(232, 184, 75, 0.3);
+    }
+    
+    .category-icon {
+      font-size: 20px;
+    }
+    
+    .recipes-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+      gap: 24px;
+    }
+    
+    .recipe-card {
+      background: var(--white);
+      border-radius: 16px;
+      overflow: hidden;
+      box-shadow: 0 4px 16px rgba(0,0,0,0.08);
+      transition: all 0.3s;
+    }
+    
+    .recipe-card:hover {
+      transform: translateY(-4px);
+      box-shadow: 0 8px 24px rgba(0,0,0,0.12);
+    }
+    
+    .recipe-image {
+      width: 100%;
+      height: 200px;
+      object-fit: cover;
+      background: linear-gradient(135deg, var(--primary-light) 0%, var(--primary) 100%);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 64px;
+      color: var(--white);
+    }
+    
+    .recipe-image img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+    
+    .recipe-content {
+      padding: 20px;
+    }
+    
+    .recipe-title {
+      font-size: 20px;
+      font-weight: 600;
+      margin-bottom: 8px;
+      color: var(--text-dark);
+    }
+
+    .recipe-source {
+      font-size: 13px;
+      color: var(--text-light);
+      margin-bottom: 8px;
+      font-style: italic;
+    }
+    
+    .recipe-rating {
+      display: flex;
+      gap: 4px;
+      margin: 12px 0;
+      font-size: 18px;
+    }
+    
+    .recipe-tags {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+      margin: 12px 0;
+    }
+    
+    .tag {
+      background: var(--primary-light);
+      color: var(--text-dark);
+      padding: 6px 12px;
+      border-radius: 16px;
+      font-size: 13px;
+      font-weight: 500;
+    }
+
+    .tag.auto-tag {
+      background: #e0f2fe;
+      color: #0369a1;
+    }
+    
+    .recipe-notes {
+      background: var(--bg-light);
+      padding: 12px;
+      border-radius: 12px;
+      margin: 12px 0;
+      font-size: 14px;
+      font-style: italic;
+      color: var(--text-light);
+      border-left: 3px solid var(--primary);
+    }
+    
+    .recipe-actions {
+      display: flex;
+      gap: 8px;
+      margin-top: 16px;
+      padding-top: 16px;
+      border-top: 1px solid #F0F0F0;
+      flex-wrap: wrap;
+    }
+    
+    .recipe-actions .btn:not(.btn-secondary) {
+      flex: 1;
+      min-width: 120px;
+    }
+    
+    .week-grid {
+      display: grid;
+      gap: 24px;
+    }
+    
+    .day-card-multi {
+      background: linear-gradient(135deg, var(--white) 0%, #FFFEF9 100%);
+      padding: 28px;
+      border-radius: 20px;
+      box-shadow: 0 6px 24px rgba(0,0,0,0.08);
+      transition: all 0.3s;
+      border: 1px solid rgba(232, 184, 75, 0.15);
+    }
+    
+    .day-card-multi:hover {
+      box-shadow: 0 8px 32px rgba(0,0,0,0.12);
+      transform: translateY(-2px);
+    }
+    
+    .day-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 20px;
+      padding-bottom: 16px;
+      border-bottom: 2px solid var(--primary-light);
+    }
+    
+    .day-name {
+      font-weight: 700;
+      font-size: 24px;
+      background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+    
+    .day-empty {
+      color: var(--text-light);
+      font-style: italic;
+      padding: 20px;
+      text-align: center;
+      background: var(--bg-light);
+      border-radius: 12px;
+      border: 2px dashed #E5E5E5;
+    }
+    
+    .day-recipes {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+    
+    .day-recipe-item {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 16px;
+      background: var(--white);
+      border-radius: 12px;
+      gap: 12px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+      transition: all 0.2s;
+      border: 1px solid #F0F0F0;
+    }
+    
+    .day-recipe-item:hover {
+      box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+      transform: translateX(4px);
+    }
+    
+    .day-recipe-info {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      flex: 1;
+    }
+    
+    .recipe-clickable {
+      transition: all 0.2s;
+      cursor: pointer;
+    }
+    
+    .recipe-clickable:hover {
+      color: var(--primary);
+    }
+    
+    .recipe-clickable:hover .day-recipe-name {
+      text-decoration: underline;
+    }
+    
+    .day-recipe-name {
+      font-weight: 600;
+      font-size: 16px;
+    }
+    
+    .day-recipe-rating {
+      font-size: 14px;
+    }
+    
+    .shopping-item {
+      padding: 16px;
+      border-bottom: 1px solid #F0F0F0;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-size: 16px;
+      transition: background 0.2s;
+      gap: 12px;
+    }
+    
+    .shopping-item.selected {
+      background: #FEF3C7;
+    }
+    
+    .shopping-item input[type="checkbox"] {
+      width: 20px;
+      height: 20px;
+      cursor: pointer;
+      flex-shrink: 0;
+    }
+    
+    .shopping-item-left {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      flex: 1;
+    }
+    
+    .shopping-item-actions {
+      display: flex;
+      gap: 8px;
+      align-items: center;
+    }
+    
+    .shopping-section {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 24px;
+    }
+    
+    .shopping-list {
+      background: var(--white);
+      padding: 28px;
+      border-radius: 16px;
+      box-shadow: 0 4px 16px rgba(0,0,0,0.08);
+    }
+    
+    .shopping-list h3 {
+      font-size: 20px;
+      margin-bottom: 20px;
+      color: var(--text-dark);
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    
+    .shopping-item:hover {
+      background: var(--bg-light);
+    }
+    
+    .shopping-item:last-child {
+      border-bottom: none;
+    }
+    
+    .shopping-item-name {
+      font-weight: 500;
+      color: var(--text-dark);
+    }
+    
+    .badge {
+      background: var(--primary);
+      color: var(--white);
+      padding: 6px 14px;
+      border-radius: 16px;
+      font-size: 14px;
+      font-weight: 600;
+    }
+    
+    .modal {
+      display: none;
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: rgba(0,0,0,0.5);
+      backdrop-filter: blur(4px);
+      z-index: 1000;
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+    }
+    
+    .modal.active {
+      display: flex;
+    }
+    
+    .modal-content {
+      background: var(--white);
+      padding: 36px;
+      border-radius: 24px;
+      max-width: 700px;
+      width: 100%;
+      max-height: 90vh;
+      overflow-y: auto;
+      box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+    }
+    
+    .modal-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 28px;
+    }
+    
+    .modal-header h2 {
+      color: var(--primary);
+      font-size: 28px;
+    }
+    
+    .close-btn {
+      background: none;
+      border: none;
+      font-size: 32px;
+      cursor: pointer;
+      color: var(--text-light);
+      padding: 0;
+      width: 36px;
+      height: 36px;
+      border-radius: 8px;
+      transition: all 0.2s;
+      touch-action: manipulation;
+    }
+    
+    .close-btn:hover {
+      background: var(--bg-light);
+      color: var(--text-dark);
+    }
+    
+    .form-group {
+      margin-bottom: 24px;
+    }
+    
+    .form-label {
+      display: block;
+      font-weight: 600;
+      margin-bottom: 8px;
+      color: var(--text-dark);
+      font-size: 15px;
+    }
+    
+    input[type="text"],
+    input[type="url"],
+    input[type="number"],
+    textarea {
+      width: 100%;
+      padding: 14px 16px;
+      border: 2px solid #E5E5E5;
+      border-radius: 12px;
+      font-size: 16px;
+      font-family: inherit;
+      transition: all 0.2s;
+    }
+    
+    input:focus,
+    textarea:focus {
+      outline: none;
+      border-color: var(--primary);
+      box-shadow: 0 0 0 3px rgba(232, 184, 75, 0.1);
+    }
+    
+    textarea {
+      resize: vertical;
+      min-height: 100px;
+    }
+    
+    .tag-input-container {
+      display: flex;
+      gap: 10px;
+    }
+    
+    .tag-input {
+      flex: 1;
+    }
+    
+    .tags-display {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin-top: 12px;
+    }
+    
+    .tag-removable {
+      background: var(--primary-light);
+      color: var(--text-dark);
+      padding: 8px 14px;
+      border-radius: 16px;
+      font-size: 14px;
+      cursor: pointer;
+      transition: all 0.2s;
+      font-weight: 500;
+    }
+    
+    .tag-removable:hover {
+      background: var(--primary);
+      color: var(--white);
+    }
+    
+    .star-rating {
+      display: flex;
+      gap: 8px;
+      font-size: 36px;
+    }
+    
+    .star-input {
+      cursor: pointer;
+      color: #E5E5E5;
+      transition: all 0.2s;
+      touch-action: manipulation;
+    }
+    
+    .star-input:hover,
+    .star-input.filled {
+      color: var(--primary);
+    }
+    
+    .empty-state {
+      text-align: center;
+      padding: 80px 20px;
+      color: var(--text-light);
+      background: var(--white);
+      border-radius: 16px;
+      box-shadow: 0 4px 16px rgba(0,0,0,0.06);
+    }
+    
+    .empty-icon {
+      font-size: 80px;
+      margin-bottom: 20px;
+    }
+    
+    .empty-state p {
+      font-size: 18px;
+      line-height: 1.6;
+    }
+    
+    .history-card {
+      background: var(--white);
+      padding: 28px;
+      border-radius: 16px;
+      box-shadow: 0 4px 16px rgba(0,0,0,0.08);
+      margin-bottom: 24px;
+    }
+    
+    .history-card h3 {
+      color: var(--primary);
+      margin-bottom: 20px;
+      font-size: 22px;
+    }
+    
+    .history-meal {
+      display: flex;
+      justify-content: space-between;
+      padding: 14px 0;
+      border-bottom: 1px solid #F0F0F0;
+      font-size: 16px;
+    }
+    
+    .history-meal:last-child {
+      border-bottom: none;
+    }
+    
+    .details {
+      margin-top: 16px;
+      padding-top: 16px;
+      border-top: 1px solid #F0F0F0;
+    }
+    
+    .details summary {
+      cursor: pointer;
+      color: var(--primary);
+      font-weight: 600;
+      font-size: 15px;
+      user-select: none;
+      list-style: none;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 8px;
+      border-radius: 8px;
+      transition: background 0.2s;
+    }
+    
+    .details summary:hover {
+      background: var(--bg-light);
+    }
+    
+    .details summary::-webkit-details-marker {
+      display: none;
+    }
+    
+    .details-content {
+      margin-top: 16px;
+      font-size: 15px;
+      line-height: 1.8;
+      color: var(--text-light);
+    }
+    
+    .ingredient-list {
+      list-style: none;
+      padding-left: 0;
+      margin: 12px 0;
+    }
+    
+    .ingredient-list li {
+      padding: 8px 0;
+      padding-left: 24px;
+      position: relative;
+    }
+    
+    .ingredient-list li:before {
+      content: "●";
+      position: absolute;
+      left: 0;
+      color: var(--primary);
+      font-size: 12px;
+    }
+    
+    .recipe-search-item {
+      padding: 16px;
+      border-bottom: 1px solid #F0F0F0;
+      cursor: pointer;
+      transition: all 0.2s;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 12px;
+    }
+    
+    .recipe-search-item:hover {
+      background: var(--bg-light);
+    }
+    
+    .recipe-search-item:last-child {
+      border-bottom: none;
+    }
+    
+    .btn-icon {
+      padding: 6px 12px;
+      font-size: 18px;
+      background: transparent;
+      border: none;
+      cursor: pointer;
+      color: var(--text-light);
+      transition: all 0.2s;
+      line-height: 1;
+      touch-action: manipulation;
+    }
+    
+    .btn-icon:hover {
+      color: #dc2626;
+    }
+    
+    .day-button {
+      padding: 16px;
+      background: var(--white);
+      border: 2px solid #E5E5E5;
+      border-radius: 12px;
+      font-size: 16px;
+      font-weight: 500;
+      cursor: pointer;
+      transition: all 0.2s;
+      text-align: left;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      touch-action: manipulation;
+    }
+    
+    .day-button:hover {
+      background: var(--bg-light);
+      border-color: var(--primary);
+    }
+    
+    .day-button.occupied {
+      background: #FEF3C7;
+      border-color: #F59E0B;
+    }
+    
+    .day-button.occupied:hover {
+      background: #FDE68A;
+    }
+    
+    .day-button-current {
+      font-size: 12px;
+      color: var(--text-light);
+      font-style: italic;
+    }
+    
+    @media (max-width: 1024px) {
+      .shopping-section {
+        grid-template-columns: 1fr;
+      }
+    }
+    
+    @media (max-width: 768px) {
+      .container {
+        padding: 20px 15px;
+      }
+      
+      .recipes-grid {
+        grid-template-columns: 1fr;
+      }
+      
+      .day-card-multi {
+        padding: 20px;
+      }
+      
+      .tabs {
+        gap: 4px;
+        padding: 6px;
+      }
+      
+      .tab {
+        padding: 12px 16px;
+        font-size: 14px;
+        min-width: 100px;
+      }
+      
+      .tab-icon {
+        font-size: 20px;
+      }
+      
+      .logo-title {
+        font-size: 24px;
+      }
+      
+      .logo-subtitle {
+        font-size: 14px;
+      }
+      
+      .modal-content {
+        padding: 24px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <!-- PWA Install Banner -->
+  <div class="install-banner" id="installBanner">
+    <div class="install-banner-content">
+      <div class="install-banner-icon">🍽️</div>
+      <div class="install-banner-text">
+        <div class="install-banner-title">Install Feed Me</div>
+        <div class="install-banner-desc">Add to your home screen for easy access</div>
+      </div>
+    </div>
+    <div class="install-banner-actions">
+      <button class="install-banner-btn install-btn-primary" id="installBtn">Install</button>
+      <button class="install-banner-btn install-btn-secondary" id="dismissBtn">Not Now</button>
+    </div>
+  </div>
+
+  <div class="header">
+    <div class="header-content">
+      <div class="logo">
+        <div class="logo-image">
+          <img id="logoImg" alt="Feed Me" style="display: none;">
+          <span id="logoEmoji">🍽️</span>
+        </div>
+        <div class="logo-text">
+          <div class="logo-title">feed me</div>
+          <div class="logo-subtitle">menu assistant</div>
+        </div>
+      </div>
+      <div class="header-actions">
+        <button class="btn" id="headerAddRecipe">➕ Add Recipe</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="container">
+    <div class="tabs">
+      <button class="tab active" data-tab="planner">
+        <span class="tab-icon">📅</span>
+        <span>Weekly Planner</span>
+      </button>
+      <button class="tab" data-tab="recipes">
+        <span class="tab-icon">👨‍🍳</span>
+        <span>My Recipes</span>
+      </button>
+      <button class="tab" data-tab="shopping">
+        <span class="tab-icon">🛒</span>
+        <span>Shopping List</span>
+      </button>
+      <button class="tab" data-tab="history">
+        <span class="tab-icon">📁</span>
+        <span>Meal History</span>
+      </button>
+    </div>
+
+    <div class="content active" id="planner">
+      <div class="weather-selector">
+        <h3>🌤️ What's the weather like this week?</h3>
+        <div class="weather-options">
+          <div class="weather-option" data-mood="cold">
+            <span>❄️</span>
+            <span>Cold</span>
+          </div>
+          <div class="weather-option" data-mood="hot">
+            <span>☀️</span>
+            <span>Hot</span>
+          </div>
+          <div class="weather-option" data-mood="rainy">
+            <span>🌧️</span>
+            <span>Rainy</span>
+          </div>
+          <div class="weather-option" data-mood="fall">
+            <span>🍂</span>
+            <span>Fall Vibes</span>
+          </div>
+        </div>
+      </div>
+      
+      <div id="recommendationsContainer"></div>
+      <div id="plannerContent"></div>
+    </div>
+
+    <div class="content" id="recipes">
+      <div id="recipesContent"></div>
+    </div>
+
+    <div class="content" id="shopping">
+      <div id="shoppingContent"></div>
+    </div>
+
+    <div class="content" id="history">
+      <div id="historyContent"></div>
+    </div>
+  </div>
+
+  <!-- Recipe Modal -->
+  <div class="modal" id="recipeModal">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h2 id="modalTitle">Add Recipe</h2>
+        <button class="close-btn" id="closeModal">×</button>
+      </div>
+      <form id="recipeForm">
+        <div class="form-group">
+          <label class="form-label">Recipe Name *</label>
+          <input type="text" id="recipeName" placeholder="e.g., Chicken Tikka Masala" required>
+        </div>
+        
+        <div class="form-group">
+          <label class="form-label">Recipe URL (optional)</label>
+          <input type="url" id="recipeUrl" placeholder="https://...">
+        </div>
+        
+        <div class="form-group">
+          <label class="form-label">Image URL (optional)</label>
+          <input type="url" id="recipeImage" placeholder="https://...">
+        </div>
+        
+        <div class="form-group">
+          <label class="form-label">Ingredients (one per line)</label>
+          <textarea id="recipeIngredients" placeholder="2 cups flour&#10;1 cup sugar&#10;3 eggs"></textarea>
+        </div>
+        
+        <div class="form-group">
+          <label class="form-label">Instructions (optional)</label>
+          <textarea id="recipeInstructions" placeholder="Step-by-step cooking instructions..."></textarea>
+        </div>
+        
+        <div class="form-group">
+          <label class="form-label">Tags</label>
+          <div class="tag-input-container">
+            <input type="text" id="tagInput" class="tag-input" placeholder="Add a tag (e.g., Quick, Healthy)">
+            <button type="button" class="btn btn-small" id="addTagBtn">Add Tag</button>
+          </div>
+          <div class="tags-display" id="tagsDisplay"></div>
+        </div>
+        
+        <div class="form-group">
+          <label class="form-label">My Notes</label>
+          <textarea id="recipeNotes" placeholder="Personal notes about this recipe..." style="min-height: 80px;"></textarea>
+        </div>
+        
+        <div class="form-group">
+          <label class="form-label">Family Rating</label>
+          <div class="star-rating" id="starRating">
+            <span class="star-input" data-rating="1">★</span>
+            <span class="star-input" data-rating="2">★</span>
+            <span class="star-input" data-rating="3">★</span>
+            <span class="star-input" data-rating="4">★</span>
+            <span class="star-input" data-rating="5">★</span>
+          </div>
+        </div>
+        
+        <button type="submit" class="btn" style="width: 100%;" id="saveRecipeBtn">Save Recipe</button>
+      </form>
+    </div>
+  </div>
+
+  <!-- Day Selector Modal -->
+  <div class="modal" id="daySelectorModal">
+    <div class="modal-content" style="max-width: 400px;">
+      <div class="modal-header">
+        <h2 id="daySelectorTitle">Add to Menu</h2>
+        <button class="close-btn" id="closeDaySelector">×</button>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Select a day:</label>
+        <div id="dayButtons" style="display: flex; flex-direction: column; gap: 10px;"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Recipe Selector Modal -->
+  <div class="modal" id="recipeSelectorModal">
+    <div class="modal-content" style="max-width: 600px;">
+      <div class="modal-header">
+        <h2 id="recipeSelectorTitle">Select Recipe</h2>
+        <button class="close-btn" id="closeRecipeSelector">×</button>
+      </div>
+      <div class="form-group">
+        <input type="text" id="recipeSelectorSearch" placeholder="Search recipes by name or tag..." style="margin-bottom: 16px;">
+        <div id="recipeSearchResults" style="max-height: 400px; overflow-y: auto;"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Recipe View Modal -->
+  <div class="modal" id="recipeViewModal">
+    <div class="modal-content" style="max-width: 700px;">
+      <div class="modal-header">
+        <h2 id="recipeViewTitle">Recipe</h2>
+        <button class="close-btn" id="closeRecipeView">×</button>
+      </div>
+      <div id="recipeViewContent"></div>
+    </div>
+  </div>
+
+  <script src="planner.js"></script>
+  
+  <!-- PWA Service Worker Registration -->
+  <script>
+    // Register Service Worker
+    if ('serviceWorker' in navigator) {
+      window.addEventListener('load', () => {
+        navigator.serviceWorker.register('/service-worker.js')
+          .then((registration) => {
+            console.log('✅ Service Worker registered:', registration.scope);
+          })
+          .catch((error) => {
+            console.log('❌ Service Worker registration failed:', error);
+          });
+      });
+    }
+
+    // PWA Install Prompt
+    let deferredPrompt;
+    const installBanner = document.getElementById('installBanner');
+    const installBtn = document.getElementById('installBtn');
+    const dismissBtn = document.getElementById('dismissBtn');
+
+    window.addEventListener('beforeinstallprompt', (e) => {
+      // Prevent the mini-infobar from appearing on mobile
+      e.preventDefault();
+      // Stash the event so it can be triggered later
+      deferredPrompt = e;
+      // Show install banner
+      installBanner.style.display = 'block';
+    });
+
+    installBtn.addEventListener('click', async () => {
+      if (!deferredPrompt) {
+        return;
+      }
+      // Show the install prompt
+      deferredPrompt.prompt();
+      // Wait for the user to respond to the prompt
+      const { outcome } = await deferredPrompt.userChoice;
+      console.log(`User response to the install prompt: ${outcome}`);
+      // Clear the deferredPrompt
+      deferredPrompt = null;
+      // Hide the banner
+      installBanner.style.display = 'none';
+    });
+
+    dismissBtn.addEventListener('click', () => {
+      installBanner.style.display = 'none';
+    });
+
+    // Detect if app is installed
+    window.addEventListener('appinstalled', () => {
+      console.log('✅ Feed Me has been installed!');
+      installBanner.style.display = 'none';
+    });
+
+    // Check if running as PWA
+    if (window.matchMedia('(display-mode: standalone)').matches) {
+      console.log('✅ Running as PWA');
+    }
+  </script>
+</body>
+</html>
